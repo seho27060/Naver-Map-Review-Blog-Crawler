@@ -9,7 +9,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from bs4 import BeautifulSoup
-from multiprocessing import Pool
+import multiprocessing
 
 from time import sleep
 
@@ -64,7 +64,7 @@ def crawler(storeIdxGet,name, adress):
         driver.switch_to.frame(frame)  # frame 변경
 
     # css를 찾을때 까지 10초 대기
-    time_wait(10, "xpath",
+    time_wait(3, "xpath",
               '/html/body/app/layout/div[3]/div[2]/shrinkable-layout/div/app-base/search-input-box/div/div/div/input')
 
     # 검색창 찾기
@@ -115,7 +115,7 @@ def crawler(storeIdxGet,name, adress):
     print("크롤링 시도")
     # sleep(3)
     try:
-        time_wait(5, 'xpath',
+        time_wait(3, 'xpath',
                   '/html/body/app/layout/div[3]/div[2]/shrinkable-layout/div/app-base/search-layout/div[2]/entry-layout/entry-place-bridge/div/nm-external-frame-bridge/nm-iframe/iframe')
         switch_frame("entryIframe")
         print("entryIframe find")
@@ -171,7 +171,7 @@ def crawler(storeIdxGet,name, adress):
 
         # -----전화번호 가져오기-----
         print("전화번호")
-        if time_wait(3, 'xpath', '/html/body/div[3]/div/div/div/div[6]/div/div[2]/div/ul/li[3]/div/span[1]'):
+        if time_wait(1.5, 'xpath', '/html/body/div[3]/div/div/div/div[6]/div/div[2]/div/ul/li[3]/div/span[1]'):
             storeTell = driver.find_element_by_xpath(
                 '/html/body/div[3]/div/div/div/div[6]/div/div[2]/div/ul/li[3]/div/span[1]').text
             storeTellValidation = storeTellRegex.search(storeTell.replace(" ",""))
@@ -197,10 +197,11 @@ def crawler(storeIdxGet,name, adress):
 
             for clickIdx in range(5):
                 # page_down(40)
-                if time_wait(3, 'xpath', "/html/body/div[3]/div/div/div/div[7]/div[2]/div[3]/div[2]/a"):
+
+                if time_wait(2, 'xpath', "/html/body/div[3]/div/div/div/div[7]/div[2]/div[3]/div[2]/a"):
                     print("리뷰 리스트 더보기 클릭")
                     driver.find_element_by_xpath("/html/body/div[3]/div/div/div/div[7]/div[2]/div[3]/div[2]/a").click()
-                    sleep(0.05)
+                    sleep(0.35)
                 else:
                     print("더보기없음 리뷰 수집시작")
                     break
@@ -237,7 +238,7 @@ def crawler(storeIdxGet,name, adress):
         try:
             # 키워드 리뷰
             for clickIdx in range(4):
-                if time_wait(3,"class","Tvx37"):
+                if time_wait(2,"class","Tvx37"):
                         keywordBtn = driver.find_element_by_class_name('Tvx37')  # 키워드가 담긴 리스트 클릭
                         print("키워드 더보기 클릭")
                         keywordBtn.send_keys(Keys.ENTER)
@@ -245,9 +246,8 @@ def crawler(storeIdxGet,name, adress):
                     print('키워드리뷰 더보기 없음' )
                     break
 
-            if time_wait(3,"class","nbD78"):
-                # keywordList = driver.find_elements_by_class_name('nbD78')  # 리뷰 리스트
-                keywordList = driver.find_elements_by_xpath('/html/body/div[3]/div/div/div/div[7]/div[2]/div[1]/div/div/div[2]/ul/li')  # 리뷰 리스트
+            if time_wait(1.5,"class","nbD78"):
+                keywordList = driver.find_elements_by_class_name('nbD78')  # 리뷰 리스트
                 for keywordIdx in range(len(keywordList)):
                     keywordTitle = keywordList[keywordIdx].find_element_by_class_name('nWiXa').text  # 키워드리뷰
                     keywordCount = keywordList[keywordIdx].find_element_by_class_name('TwM9q').text  # 리뷰를 선택한 수
@@ -284,16 +284,17 @@ def crawler(storeIdxGet,name, adress):
                 if reviewTab.text == "블로그리뷰":
                     print(reviewTab.text, "찾았다")
                     reviewTab.send_keys(Keys.ENTER)
+                    sleep(0.5)
                     break
 
             print("블로그 리뷰 탭 전환")
             for clickIdx in range(5):
                 # page_down(40)
-                if time_wait(3, 'xpath', "/html/body/div[3]/div/div/div/div[7]/div[2]/div[2]/div[2]/a"):
+                if time_wait(2, 'xpath', "/html/body/div[3]/div/div/div/div[7]/div[2]/div[2]/div[2]/a"):
                     print("블로그 리스트 더보기 클릭")
-                    sleep(0.01)
                     try:
                         driver.find_element_by_xpath("/html/body/div[3]/div/div/div/div[7]/div[2]/div[2]/div[2]/a").click()
+                        sleep(0.35)
                     except:
                         print("더보기 클릭 실패")
                 else:
@@ -311,9 +312,14 @@ def crawler(storeIdxGet,name, adress):
                 aTag = blogUrls[blogUrlIdx].find_element_by_tag_name("a")
                 getUrl = aTag.get_attribute("href")
                 # print(getUrl)
-                blogReview = blogCrawler.blogCrawler(getUrl)
                 blogUrlList.append(getUrl)
-                blogReviewList.append(blogReview)
+            if blogUrlList:
+                print("multiprocessing")
+                pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
+                blogReviewList = pool.map(blogCrawler.blogCrawler, blogUrlList)
+                print("mulit processing - blog 결과 :",len(result))
+                pool.close()
+                pool.join()
         except:
             print("블로그 리뷰 에러")
 
