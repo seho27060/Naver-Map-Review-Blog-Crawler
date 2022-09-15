@@ -32,7 +32,7 @@ except:
 
 sumTime = 0
 nowIdx = startIdx
-for idx in range(startIdx,endIdx):
+for idx in range(startIdx,10):
     startTime = time.time()
     searchWord = ""
     rawData = rawDataList.loc[idx,["상가업소번호","상호명","도로명주소"]]
