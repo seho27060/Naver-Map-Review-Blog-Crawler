@@ -182,7 +182,7 @@ if __name__ == '__main__':
         try:
             # 검색된 상호명/ 음식 카테고리
             try:
-                if time_wait(3, "class","YouOG"):
+                if time_wait(2, "class","YouOG"):
                     storeTitle = driver.find_element_by_class_name("YouOG")
                     try:
                         storeName = storeTitle.find_element_by_class_name("Fc1rA").text
@@ -197,7 +197,7 @@ if __name__ == '__main__':
 
             print("데이터 확인 :", storeName)
             print("별점/ 리뷰 개수/ 블로그 리뷰 개수")
-            if time_wait(3, 'xpath', '/html/body/div[3]/div/div/div/div[2]/div[1]/div[2]'):
+            if time_wait(2, 'xpath', '/html/body/div[3]/div/div/div/div[2]/div[1]/div[2]'):
                 ratingReviewBlogCnt = driver.find_elements_by_xpath(
                     '/html/body/div[3]/div/div/div/div[2]/div[1]/div[2]/span')
                 for idx in range(len(ratingReviewBlogCnt)):
@@ -254,7 +254,7 @@ if __name__ == '__main__':
 
                 sleep(1)
 
-                if time_wait(3,"class","YeINN"):
+                if time_wait(2,"class","YeINN"):
                     reviews = driver.find_elements_by_class_name("YeINN")
                 else:
                     reviews = []
@@ -350,7 +350,7 @@ if __name__ == '__main__':
 
                 sleep(1)
 
-                if time_wait(3, "class", "xg2_q"):
+                if time_wait(2, "class", "xg2_q"):
                     blogUrls = driver.find_elements_by_class_name("xg2_q")
                 else:
                     blogUrls = []
