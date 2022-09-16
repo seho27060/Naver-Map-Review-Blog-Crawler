@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
         url = 'https://map.naver.com/v5/search'
         # driver = webdriver.Chrome('./chromedriver')  # 드라이버 경로
-        driver = webdriver.Chrome('/chromedriver.exe',options=options) # 크롬창 옵션 적용
+        driver = webdriver.Chrome('./chromedriver.exe',options=options) # 크롬창 옵션 적용
         driver.get(url)
 
         # xpath 찾을때 까지 num초대기
