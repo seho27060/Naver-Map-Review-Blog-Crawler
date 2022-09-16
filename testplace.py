@@ -62,6 +62,7 @@ def blogCrawler(url):
             print("블로그 조회 실패 :", e)
     else:
         print(response.status_code)
+    content = re.compile('[^가-힣+ ]').sub('', content)
     return content
 
 if __name__ == '__main__':
@@ -79,7 +80,7 @@ if __name__ == '__main__':
 
         url = 'https://map.naver.com/v5/search'
         # driver = webdriver.Chrome('./chromedriver')  # 드라이버 경로
-        driver = webdriver.Chrome('C:/chromedriver.exe',options=options) # 크롬창 옵션 적용
+        driver = webdriver.Chrome('/chromedriver.exe',options=options) # 크롬창 옵션 적용
         driver.get(url)
 
         # xpath 찾을때 까지 num초대기
@@ -270,6 +271,7 @@ if __name__ == '__main__':
                         pass
                     try:
                         review = reviews[idx].find_element_by_class_name("ZZ4OK").text.replace("\n", " ")
+                        review = re.compile('[^가-힣+ ]').sub('', review)
                         # review = reviews[idx].text.replace("\n", " ")
                     except Exception as e:
                         print("리뷰 못찾음 :",e)
