@@ -19,11 +19,11 @@ from time import sleep
 
 import sys, os
 
-if  getattr(sys, 'frozen', False):
-    chromedriver_path = os.path.join(sys._MEIPASS, "C:/chromedriver.exe")
-    driver = webdriver.Chrome(chromedriver_path)
-else:
-    driver = webdriver.Chrome()
+# if  getattr(sys, 'frozen', False):
+#     chromedriver_path = os.path.join(sys._MEIPASS, "C:/chromedriver.exe")
+#     driver = webdriver.Chrome(chromedriver_path)
+# else:
+#     driver = webdriver.Chrome()
 
 def blogCrawler(url):
     response = requests.get(url)
@@ -74,12 +74,12 @@ if __name__ == '__main__':
 
         # --크롬창을 숨기고 실행-- driver에 options를 추가해주면된다
         options = webdriver.ChromeOptions()
-        options.add_experimental_option("excludeSwitches", ["enable-logging"])
+        # options.add_experimental_option("excludeSwitches", ["enable-logging"])
         # options.add_argument('headless')
 
         url = 'https://map.naver.com/v5/search'
         # driver = webdriver.Chrome('./chromedriver')  # 드라이버 경로
-        driver = webdriver.Chrome('C:/chromedriver.exe',chrome_options=options) # 크롬창 옵션 적용
+        driver = webdriver.Chrome('C:/chromedriver.exe',options=options) # 크롬창 옵션 적용
         driver.get(url)
 
         # xpath 찾을때 까지 num초대기
@@ -117,7 +117,7 @@ if __name__ == '__main__':
             driver.switch_to.frame(frame)  # frame 변경
 
 
-        # css를 찾을때 까지 10초 대기
+        # css를 찾을때 까지 3초 대기
         time_wait(3, "xpath",
                   '/html/body/app/layout/div[3]/div[2]/shrinkable-layout/div/app-base/search-input-box/div/div/div/input')
 
@@ -125,9 +125,6 @@ if __name__ == '__main__':
         search = driver.find_element_by_css_selector('div.input_box > input.input_search')
         search.send_keys(searchWord)  # 검색어 입력
         search.send_keys(Keys.ENTER)  # 엔터버튼 누르기
-
-        # res = driver.page_source  # 페이지 소스 가져오기
-        # soup = BeautifulSoup(res, 'html.parser')  # html 파싱하여  가져온다
 
         storeIdx = storeIdxGet
         storeName = name
@@ -144,18 +141,17 @@ if __name__ == '__main__':
         storeTellRegex = re.compile("\d{1,5}-\d{1,5}-\d{1,5}")
 
         result = {
-            "storeIdx" : storeIdx,
-            "searchKeyword": name + " " + adress,
+            "storeIdx" : storeIdx, # 상호 고유 번호
+            "searchKeyword": name + " " + adress, # 검색 키워드
             "name": storeName,  # 처음 검색할때 상호명으로 저장
-            "foodCategory": foodCategory,
-            "rating": storeRating,
-            "tell": storeTell,
-            "reviews": reviewList,
-            "reviewCnt": reviewCnt,
-            "blogUrls": blogUrlList,
-            "blogReviews": blogReviewList,
-            "blogCnt": blogCnt,
-            "keywordReviewDict": keywordReviewDict,
+            "foodCategory": foodCategory, # 음식 카테고리
+            "rating": storeRating, # 별점
+            "tell": storeTell, # 가게 전화번호
+            "reviews": reviewList, # 수집된 리뷰 개수
+            "reviewCnt": reviewCnt, # 전체 리뷰 개수
+            "blogReviews": blogReviewList, # 수집된 블로그 리뷰
+            "blogCnt": blogCnt, # 전체 블로그 개수
+            "keywordReviewDict": keywordReviewDict, # 키워드 리뷰 해쉬
         }
         # frame 변경
         driver.switch_to.default_content()
@@ -177,11 +173,11 @@ if __name__ == '__main__':
             print("entryIframe 못찾음")
             driver.quit()  # 작업이 끝나면 창을닫는다.
             return result
-        # page_down(40)
 
         sleep(1)
 
-
+        # 네이버 지도 변수 searchKeyword로 검색 입력.
+        # 크롤링 시작
         try:
             # 검색된 상호명/ 음식 카테고리
             try:
@@ -198,8 +194,8 @@ if __name__ == '__main__':
             except Exception as e:
                 print("검색 상호명/ 음식 카테고리 에러 :", e)
 
-            print("데이터 확인. 크롤링 시작 :", storeName)
-            print("별점")
+            print("데이터 확인 :", storeName)
+            print("별점/ 리뷰 개수/ 블로그 리뷰 개수")
             if time_wait(3, 'xpath', '/html/body/div[3]/div/div/div/div[2]/div[1]/div[2]'):
                 ratingReviewBlogCnt = driver.find_elements_by_xpath(
                     '/html/body/div[3]/div/div/div/div[2]/div[1]/div[2]/span')
@@ -231,7 +227,6 @@ if __name__ == '__main__':
                 storeTellValidation = storeTellRegex.search(storeTell.replace(" ",""))
                 if not storeTellValidation:
                     storeTell = ""
-                # store_tel = driver.find_element_by_css_selector("#app-root > div > div > div > div:nth-child(6) > div > div.place_section.no_margin.vKA6F > div > ul > li.SF_Mq.SjF5j > div > span.dry01").text
             else:
                 print("전화번호 없음")
             print("전화번호", storeTell)
@@ -239,7 +234,6 @@ if __name__ == '__main__':
             # 방문자 리뷰
             try:
                 tabBtns = driver.find_elements_by_xpath("/html/body/div[3]/div/div/div/div[5]/div/div/div/div/a")
-                # tabBtns = driver.find_elements_by_class_name("tpj9w _tab-menu")
                 sleep(0.5)
                 for tab in tabBtns:
                     if tab.text == "리뷰":
@@ -248,10 +242,7 @@ if __name__ == '__main__':
                         break
                 sleep(1)
 
-
                 for clickIdx in range(5):
-                    # page_down(40)
-
                     if time_wait(2, 'xpath', "/html/body/div[3]/div/div/div/div[7]/div[2]/div[3]/div[2]/a"):
                         print("리뷰 리스트 더보기 클릭")
                         driver.find_element_by_xpath("/html/body/div[3]/div/div/div/div[7]/div[2]/div[3]/div[2]/a").click()
@@ -356,7 +347,7 @@ if __name__ == '__main__':
                         break
 
                 sleep(1)
-                #/html/body/div[3]/div/div/div/div[7]/div[2]/div[3]/div[1]/ul/li[1]
+
                 if time_wait(3, "class", "xg2_q"):
                     blogUrls = driver.find_elements_by_class_name("xg2_q")
                 else:
@@ -394,7 +385,6 @@ if __name__ == '__main__':
             "tell": storeTell,
             "reviews": reviewList,
             "reviewCnt" : reviewCnt,
-            "blogUrls": blogUrlList,
             "blogReviews": blogReviewList,
             "blogCnt" : blogCnt,
             "keywordReviewList": keywordReviewDict,
@@ -402,7 +392,7 @@ if __name__ == '__main__':
         print(f'{searchWord} ...완료')
         print('[데이터 수집 완료]\n소요 시간 :', time.time() - start)
         print(
-            f"리뷰 개수 : {len(result['reviews'])} 블로그 url 개수 : {len(result['blogUrls'])} 블로그 리뷰 개수 : {len(result['blogReviews'])}")
+            f"리뷰 개수 : {len(result['reviews'])} 블로그 url 개수 : {len(blogUrls)} 블로그 리뷰 개수 : {len(result['blogReviews'])}")
         driver.quit()  # 작업이 끝나면 창을닫는다.
         return result
 
